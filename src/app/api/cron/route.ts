@@ -1,14 +1,15 @@
 import { latestOCR } from "@/hooks/use-ocr-data";
 import { storeCronData } from "@/lib/cron_config";
+import { getBaseUrl } from "@/lib/utils";
 import { pipe } from "@screenpipe/js";
 
 const BASE_URL =
-  process.env.NODE_ENV === "development" ? "http://localhost:3000" : "";
+  process.env.NODE_ENV === "development" ? "http://localhost:3000/api" : null;
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export const POST = async (req: Request) => {
+export const POST = async (request: Request) => {
   try {
     const latest_ocr = await latestOCR({ pageIndex: 0, pageSize: 5 });
 
@@ -26,13 +27,16 @@ export const POST = async (req: Request) => {
 
     console.log("Chunks length: ", chunks.length);
 
-    const req = await fetch(`${BASE_URL}/api/tweet`, {
-      method: "POST",
-      body: JSON.stringify(chunks),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const req = await fetch(
+      `${BASE_URL ? BASE_URL : getBaseUrl(request.url)}/tweet`,
+      {
+        method: "POST",
+        body: JSON.stringify(chunks),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!req.ok) {
       console.log(await req.text());

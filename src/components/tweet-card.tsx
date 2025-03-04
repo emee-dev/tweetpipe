@@ -1,8 +1,8 @@
 "use client";
 
-import { Clipboard, MoreHorizontal, Twitter, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { faBluesky } from "@fortawesome/free-brands-svg-icons/faBluesky";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Clipboard, MoreHorizontal, Twitter } from "lucide-react";
 import { useState } from "react";
 
 interface Tweet {
@@ -61,9 +63,7 @@ export function TweetCard({
           </Avatar>
           <div>
             <div className="font-semibold">Screenpipe</div>
-            <div className="text-sm text-muted-foreground">
-              @{"screen_pipe"}
-            </div>
+            <div className="text-sm text-muted-foreground">@screen_pipe</div>
           </div>
         </div>
         <DropdownMenu>
@@ -88,24 +88,17 @@ export function TweetCard({
                 Edit tweet
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem
-              // className="gap-x-2"
-              onClick={() => onTwitterShare?.(tweet.id)}
-            >
+            <DropdownMenuItem onClick={() => onTwitterShare?.(tweet.id)}>
               <Twitter className="mr-2 size-5 text-blue-600 fill-blue-700" />
               Share on Twitter
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onBlueSkyShare?.(tweet.id)}>
-              <X className="mr-2 size-5 text-blue-600 fill-blue-700" />
+              <FontAwesomeIcon
+                icon={faBluesky}
+                className="mr-2 size-5 text-blue-600 fill-blue-700"
+              />
               Share on Bluesky
             </DropdownMenuItem>
-            {/* <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onDelete?.(tweet.id)}
-              className="text-destructive"
-            >
-              Delete
-            </DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       </CardHeader>
@@ -113,13 +106,13 @@ export function TweetCard({
         {isEditing ? (
           <div className="space-y-2">
             <textarea
-              className="w-full p-2 rounded-md bg-transparent"
+              className="w-full p-2 rounded-md bg-transparent scrollbar-hide"
               value={editContent}
               autoCorrect="off"
               onChange={(e) => setEditContent(e.target.value)}
               rows={3}
             />
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-end space-x-2 scrollbar-hide">
               <Button
                 variant="outline"
                 size="sm"
@@ -142,7 +135,7 @@ export function TweetCard({
             </div>
           </div>
         ) : (
-          <p className="whitespace-pre-wrap">{tweet.tweet}</p>
+          <p className=" text-pretty">{tweet.tweet}</p>
         )}
       </CardContent>
     </Card>

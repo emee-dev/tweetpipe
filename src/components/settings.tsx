@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import MultipleSelector, { Option } from "@/components/multiple-selector";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -36,6 +37,17 @@ const updateSettings = async (newSettings: SettingsProps) => {
   }
   return response.json();
 };
+
+const OPTIONS: Option[] = [
+  { label: "llama3:latest", value: "llama3:latest", model: "ollama" },
+  { label: "mistral:latest", value: "mistral:latest", model: "ollama" },
+  { label: "gemma:latest", value: "gemma:latest", model: "ollama" },
+  { label: "mixtral:latest", value: "mixtral:latest", model: "ollama" },
+  { label: "gemini-1.5-pro", value: "gemini-1.5-pro", model: "google" },
+  { label: "gemini-1.5-flash", value: "gemini-1.5-flash", model: "google" },
+  { label: "gpt-4-turbo", value: "gpt-4-turbo", model: "openai" },
+  { label: "gpt-3.5-turbo", value: "gpt-3.5-turbo", model: "openai" },
+];
 
 function SettingsPage() {
   const {
@@ -154,11 +166,55 @@ function SettingsPage() {
         <Separator />
         <div className="space-y-2">
           <Label htmlFor="model">Model</Label>
-          <Input
-            name="model"
-            placeholder="Enter model identifier"
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
+          <MultipleSelector
+            creatable
+            maxSelected={1}
+            groupBy="model"
+            defaultOptions={OPTIONS}
+            placeholder="Select or enter your favourite model."
+            onChange={(e) => {
+              const item = e[0];
+
+              if (!item) {
+                setModel("");
+                return;
+              }
+
+              if (item.model && item.model !== provider) {
+                toast({
+                  title: "Invalid model: ",
+                  description: `Please pick a valid LLM model for provider - ${provider}.`,
+                  variant: "destructive",
+                });
+                return;
+              }
+
+              setModel(item.value);
+            }}
+            onSearchSync={(value) => {
+              // Could be debounced to make sure it is prepended after the user is doon typing.
+              let pre = OPTIONS;
+              pre.unshift({ value, label: value });
+
+              return pre;
+            }}
+            loadingIndicator={
+              <p className="py-2 text-center text-lg leading-10 text-muted-foreground">
+                loading...
+              </p>
+            }
+            onMaxSelected={(maxLimit) => {
+              toast({
+                title: `Model limit:`,
+                description: `Only 1 model for a provider allowed.`,
+                variant: "destructive",
+              });
+            }}
+            emptyIndicator={
+              <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
+                No results found.
+              </p>
+            }
           />
         </div>
         {provider !== "ollama" && (

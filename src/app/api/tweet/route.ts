@@ -20,6 +20,24 @@ export const GET = async (req: Request) => {
   }
 };
 
+const sample_data = [
+  {
+    id: "1",
+    tweet:
+      "Debugging TweetPipe: When 'fetch' goes wrong and your data ghosts you.👻 Is it the API, the code, or gremlins? Time to dive in! #codinglife #debugging",
+  },
+  {
+    id: "2",
+    tweet:
+      "My coding journey is 90% staring at error messages and 10% feeling like a wizard when I fix them. TweetPipe, why you gotta be like this? #devhumor #programming",
+  },
+  {
+    id: "3",
+    tweet:
+      "Anyone else experience 'Failed to fetch' more than they'd like to admit?  Send help (and snacks).  Working on this TweetPipe bug.   #codingproblems #softwaredevelopment",
+  },
+];
+
 export const POST = async (req: Request) => {
   try {
     const default_model = "gemini-1.5-pro";
@@ -62,7 +80,7 @@ export const POST = async (req: Request) => {
 
     if (!model) {
       console.log("Error picking a model.");
-      return Response.json({ message: "Invalid model." });
+      return Response.json({ message: "Invalid model." }, { status: 500 });
     }
 
     const { object } = await generateObject({
@@ -73,7 +91,6 @@ export const POST = async (req: Request) => {
           .string()
           .describe("The content of tweet ready to posted on Twitter."),
       }),
-      // model: ollama("llama3.2:latest"),
       model: model as any,
       system: `You are a friendly AI tweet bot.
       Your task is to summarize OCR text chunks and
@@ -98,6 +115,7 @@ export const POST = async (req: Request) => {
     }));
 
     return Response.json(withIds);
+    // return Response.json(sample_data);
   } catch (error) {
     console.error("Tweet Error", error);
     return Response.json({ message: "Internal error." }, { status: 500 });

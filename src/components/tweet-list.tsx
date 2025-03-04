@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
+import { useCopy } from "@/hooks/use-copy";
 import useOCRData from "@/hooks/use-ocr-data";
 import useTweet from "@/hooks/use-tweet";
 import {
@@ -19,7 +20,6 @@ import {
   randomGradient,
 } from "@/lib/utils";
 import { MessageSquare, MoreHorizontal, RefreshCcw, Table } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type Tweet = { id: string; tweet: string; bg_color: string };
@@ -30,7 +30,7 @@ export default function TweetBoard() {
   const [textFilter] = useState("");
   const [appFilter] = useState("");
   const [isTable, setIsTable] = useState(true);
-  const router = useRouter();
+  const { copyToClipboard } = useCopy();
   const { toast } = useToast();
 
   const [displayedTweets, setDisplayedTweets] = useState<Tweet[]>([]);
@@ -77,7 +77,6 @@ export default function TweetBoard() {
         toast({
           title: "Tweet error:",
           description: "Tweet generation failed, reload table and try again.",
-          // variant: "destructive",
         });
       }
     }
@@ -211,7 +210,7 @@ export default function TweetBoard() {
           {isTweetPending ? (
             renderLoading
           ) : displayedTweets && displayedTweets.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 transition-all ease-in-out duration-300">
+            <div className="grid gap-4 sm:grid-cols-2 transition-all ease-in-out duration-300">
               {displayedTweets.map((item) => (
                 <TweetCard
                   editable
@@ -219,22 +218,22 @@ export default function TweetBoard() {
                   tweet={item}
                   bg_color={item.bg_color}
                   onDelete={() => handleDelete(item.id)}
-                  onCopy={() => console.log(item.tweet)}
+                  onCopy={() => copyToClipboard(item.tweet)}
                   onTwitterShare={() => {
                     const shareUrl = generateTwitterShareUrl({
                       text: item.tweet,
                       hashtags: ["screen_pipe", "tweetpipe"],
                     });
 
-                    router.push(shareUrl);
+                    window.open(shareUrl, "_blank");
                   }}
                   onBlueSkyShare={() => {
                     const shareUrl = generateBlueskyShareUrl({
                       text: item.tweet,
                     });
-                    router.push(shareUrl);
+                    window.open(shareUrl, "_blank");
                   }}
-                  onEdit={(newContent) => handleEdit(item.id, newContent)}
+                  onEdit={(id, newContent) => handleEdit(id, newContent)}
                 />
               ))}
             </div>

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { useCopy } from "@/hooks/use-copy";
 import { Storage } from "@/lib/cron_config";
 import {
   generateBlueskyShareUrl,
@@ -8,7 +9,6 @@ import {
 } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCcw } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { TweetCard } from "./tweet-card";
 
@@ -17,7 +17,7 @@ const assignColors = (history: [Storage]) => {
     Object.entries(history).map(([timestamp, { tweets }]) => [
       timestamp,
       {
-        tweets: tweets.map((tweet: any) => ({
+        tweets: tweets?.map((tweet: any) => ({
           ...tweet,
           bg_color: randomGradient(),
         })),
@@ -48,8 +48,8 @@ const getPreviousTweets = async () => {
 type History = { history: Storage };
 
 const HistoryPage = () => {
-  const router = useRouter();
   const { toast } = useToast();
+  const { copyToClipboard } = useCopy();
 
   const {
     data: history,
@@ -63,6 +63,7 @@ const HistoryPage = () => {
 
   useEffect(() => {
     if (error) {
+      console.log(error);
       toast({
         title: "Error: ",
         description: "There was an error fetching history.",
@@ -124,33 +125,35 @@ const HistoryPage = () => {
                     {new Date(timestamp).toLocaleString()}
                   </h2>
                   <div className="space-y-4 transition-all ease-in-out duration-300 mt-2">
-                    {tweets.map((item) => {
-                      return (
-                        <TweetCard
-                          key={item.id}
-                          tweet={item}
-                          bg_color={item.bg_color}
-                          onDelete={() => {}}
-                          onCopy={() => console.log(item.tweet)}
-                          onTwitterShare={() => {
-                            const shareUrl = generateTwitterShareUrl({
-                              text: item.tweet,
-                              hashtags: ["screenpipe"],
-                            });
+                    {tweets ? (
+                      tweets?.map((item) => {
+                        return (
+                          <TweetCard
+                            key={item.id}
+                            tweet={item}
+                            bg_color={item.bg_color}
+                            onCopy={() => copyToClipboard(item.tweet)}
+                            onTwitterShare={() => {
+                              const shareUrl = generateTwitterShareUrl({
+                                text: item.tweet,
+                                hashtags: ["screenpipe"],
+                              });
 
-                            router.push(shareUrl);
-                          }}
-                          onBlueSkyShare={() => {
-                            const shareUrl = generateBlueskyShareUrl({
-                              text: item.tweet,
-                            });
+                              window.open(shareUrl, "_blank");
+                            }}
+                            onBlueSkyShare={() => {
+                              const shareUrl = generateBlueskyShareUrl({
+                                text: item.tweet,
+                              });
 
-                            router.push(shareUrl);
-                          }}
-                          onEdit={() => {}}
-                        />
-                      );
-                    })}
+                              window.open(shareUrl, "_blank");
+                            }}
+                          />
+                        );
+                      })
+                    ) : (
+                      <div>No history to load</div>
+                    )}
                   </div>
                 </div>
               )
